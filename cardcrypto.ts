@@ -2,6 +2,18 @@ import { createCipheriv, createDecipheriv } from "crypto"
 import JSZip, { JSZipObject } from "jszip"
 
 export class CardCrypto {
+    /**
+     * Calculates a DES session key as per GP Card Spec 2.1.1 E.4.1.
+     * @param data the input data
+     * @param key the cipher key
+     */
+    static tripleDesCbc(data:any, key:any) {        
+        const cipher = createCipheriv('des-ede-cbc', key, Buffer.alloc(8))
+        cipher.setAutoPadding(false)
+        const b = cipher.update(data)
+        const f = cipher.final()
+        return Buffer.concat([b, f], b.length + f.length)
+    }
     static getRetailMac(keystr:string, datastr:string, ivstr:string) {
         // bit pad
         let datastrpadded = datastr + "8000000000000000"

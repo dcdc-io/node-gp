@@ -1,8 +1,9 @@
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from "crypto"
-import { CardCrypto } from "./cardcrypto";
+import { CardCrypto } from "./CardCrypto";
 import { isArray } from "util";
 import { readFile, readFileSync } from "fs"
 import { loadAsync as loadZip } from "jszip"
+import GlobalPlatform from "./GlobalPlatform";
 
 const smartcard = require('smartcard')
 const Devices = smartcard.Devices
@@ -20,16 +21,6 @@ const APDU_STATIC = {
 }
 
 const check = (test: boolean, message: string) => { if (!test) throw message }
-
-const enccbc3des = (data:any, key:any) => {
-    let cipher = createCipheriv('des-ede-cbc', key, Buffer.alloc(8))
-    //let cipher = crypto.createCipher('des-ede3-cbc', key)
-    cipher.setAutoPadding(false)
-
-    let b = cipher.update(data)
-    let f = cipher.final()
-    return Buffer.concat([b, f], b.length + f.length)
-}
 
 const hbyte = (x:any) => x.toString("16").replace(/(^\d$)/, "0$1")
 
@@ -76,54 +67,11 @@ devices.on('device-activated', ({ device }:any) => {
     // device.setShareMode(2) // TODO: benbenbenbenbenben/smartcard
     device.on('card-inserted', async ({ card }:any) => {
 
-        // setup
-        let hostchallenge = randomBytes(8).toString("hex")
+        let gpcard = new GlobalPlatform(card)
+        await gpcard.connect()
 
-        // 1. select gp
-        let selectresponse = await card.issueCommand(APDU_STATIC.selectGp)
-        check(SW_OK(selectresponse), `unexpected ${SW(selectresponse).toString(16)}`)
-
-        // 2. init update
-        let initresponse = await card.issueCommand("8050000008" + hostchallenge + "28")
-        check(SW_OK(initresponse), `unexpected ${SW(selectresponse).toString(16)}`)
-        check(initresponse.length === 30, `init response length incorrect`)
-        /***
-         * key div data     10
-         * key info         2
-         * seq              2
-         * challenge        6
-         * cryptogram       8
-         */
-        let seq = initresponse.slice(12, 14).toString("hex")
-        let session = {
-            cmac:   enccbc3des(Buffer.from("0101" + seq + "000000000000000000000000", "hex"), Buffer.from(authkey, "hex")),
-            rmac:   enccbc3des(Buffer.from("0102" + seq + "000000000000000000000000", "hex"), Buffer.from(authkey, "hex")),
-            dek:    enccbc3des(Buffer.from("0181" + seq + "000000000000000000000000", "hex"), Buffer.from(authkey, "hex")),
-            enc:    enccbc3des(Buffer.from("0182" + seq + "000000000000000000000000", "hex"), Buffer.from(authkey, "hex"))
-        }
-
-        let cardchallenge = initresponse.slice(12, 20).toString("hex")
-        let cardexpected = initresponse.slice(20, 28).toString("hex")
-        let cardactual = enccbc3des(Buffer.from(hostchallenge + cardchallenge + "8000000000000000", "hex"), session.enc).slice(16, 24).toString("hex")
-        let hostactual = enccbc3des(Buffer.from(cardchallenge + hostchallenge + "8000000000000000", "hex"), session.enc).slice(16, 24).toString("hex")
-        check(cardexpected === cardactual, `card cryptogram failed`)
-
-        let externalauth = "8482000010" + hostactual
-        let sig = CardCrypto.getRetailMac(session.cmac.toString("hex"), externalauth, "0000000000000000")
-        externalauth += sig.toString("hex")
-        let authresponse = await card.issueCommand(externalauth)
-        check(SW_OK(authresponse), `unexpected auth response ${SW(authresponse).toString(16)}`)
-        
-        console.log("gp device authenticated and ready")
-
-        // list packages + applets
-        let packagesraw = await card.issueCommand(APDU_STATIC.lsPackage)
-        let appletsraw = await card.issueCommand(APDU_STATIC.lsApplet)
-
-        // packages and applets - 1 aid len, n aid, 1 state, 1 privs
-        let packages = readStatus(packagesraw)
-        let applets = readStatus(appletsraw)
-
+        let packages = await gpcard.getPackages()
+        let applets = await gpcard.getApplets()
         
         console.log(packages)
         console.log(applets)
