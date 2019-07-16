@@ -1,10 +1,8 @@
 import { randomBytes } from "crypto";
 import { CardCrypto } from "./CardCrypto";
 import IApplication from "./IApplication";
+import { CHECK, SW_OK, SW } from "./Utils";
 
-const CHECK = (test: boolean, message: string) => { if (!test) throw message }
-const SW = (buffer:Buffer) => buffer.readUInt16BE(buffer.length - 2)
-const SW_OK = (buffer:Buffer) => SW(buffer) === 0x9000
 
 export default class GlobalPlatform implements IApplication {
 
@@ -121,5 +119,10 @@ export default class GlobalPlatform implements IApplication {
     async getApplets() {
         CHECK(this._connected, "not connected")
         return this.parseStatusResponse(await this.card.issueCommand("80f24000024f00"))
+    }
+
+    async deletePackage(status:{aid:Buffer | Uint8Array}) {
+        const hexByte = (x:number) => Buffer.from([x]).toString("hex")
+        this.card.issueCommand(`80e40080${hexByte(status.aid.length + 2)}4f${hexByte(status.aid.length)}${Buffer.from(status.aid).toString("hex")}00`)
     }
 }
