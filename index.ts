@@ -10,7 +10,13 @@ const devices = new Devices()
 
 devices.on('device-activated', ({ device }:any) => {
     // device.setShareMode(2) // TODO: benbenbenbenbenben/smartcard
-    device.on('card-inserted', async ({ card }:any) => {
+    device.on('card-inserted', ({card}:any) => setTimeout(async () => {
+
+        device.on('card-removed', (rDevice:any) => {
+            if (rDevice.card === card) {
+                // this card removed
+            }
+        })
 
         let gpcard = new GlobalPlatform(card)
         await gpcard.connect()
@@ -33,5 +39,5 @@ devices.on('device-activated', ({ device }:any) => {
         const loadresponse = await CardCrypto.installForLoad(card, zdata)
         CHECK(SW_OK(loadresponse), `unexpected response for INSTALL (for load) ${SW(loadresponse).toString(16)}`)
 
-    })
+    }, 500 /* TODO: remove this delay hack for exclusive/shared access interference */))
 }); 
