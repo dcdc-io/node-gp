@@ -1,7 +1,9 @@
-import { randomBytes } from "crypto";
-import { CardCrypto } from "./CardCrypto";
-import IApplication from "./IApplication";
-import { CHECK, SW_OK, SW } from "./Utils";
+import { randomBytes } from "crypto"
+import { CardCrypto } from "./CardCrypto"
+import IApplication from "./IApplication"
+import { CHECK, SW_OK, SW } from "./Utils"
+import JSZip, { JSZipObject } from "jszip"
+import { Stream } from "stream";
 
 
 export default class GlobalPlatform implements IApplication {
@@ -124,5 +126,52 @@ export default class GlobalPlatform implements IApplication {
     async deletePackage(status:{aid:Buffer | Uint8Array}) {
         const hexByte = (x:number) => Buffer.from([x]).toString("hex")
         this.card.issueCommand(`80e40080${hexByte(status.aid.length + 2)}4f${hexByte(status.aid.length)}${Buffer.from(status.aid).toString("hex")}00`)
+    }
+
+    async installForLoad(zdata:JSZip):Promise<Buffer> {
+        const moduleNames = ["Header", "Directory", "Import", "Applet", "Class", "Method", "StaticField", "Export", "ConstantPool", "RefLocation"]
+        
+        const modules = []
+        for (let mod of moduleNames) {
+            const files = zdata.filter(f => f.endsWith(`${mod}.cap`))
+            if (files.length > 0) {
+                modules.push({
+                    module: mod,
+                    data: await files[0].async("nodebuffer"),
+                    i: modules.length
+                })
+            }
+        }
+
+        const aid = modules.find((m) => m.module === "Header")!.data.slice(13, 13 + modules.find((m:any) => m.module === "Header")!.data[12])
+
+        let apdu:string[] = []
+
+        // install
+        apdu.push(`80e60200${(aid.length + 5 + 256).toString(16).substring(1)}${(aid.length + 256).toString(16).substring(1)}${aid.toString("hex")}0000000001`)
+
+        // load loop
+        // see https://www.w3.org/Protocols/HTTP-NG/asn1.html for ASN.1/TLV info
+        let contig = Buffer.concat(modules.map(m => m.data))
+        const block = 0xfa        
+        if (contig.length < 128) {
+            apdu.push(`80e80000c4${Buffer.from([contig.length]).toString("hex")}${contig.toString("hex")}`)
+        }
+        else {
+            Buffer.from([apdu.length - 1, block]).toString("hex") // ?
+            apdu.push(`80e800${Buffer.from([apdu.length - 1, Math.min(block, contig.length) + 4]).toString("hex")}c482${Buffer.from([contig.length >> 8, contig.length]).toString("hex")}${contig.slice(0, block).toString("hex")}`)
+            contig = contig.slice(block)
+        }
+        while (contig.length) {
+            apdu.push(`80e8${contig.length > block ? "00" : "80"}${Buffer.from([apdu.length - 1, Math.min(block, contig.length)]).toString("hex")}${contig.slice(0, block).toString("hex")}`)
+            contig = contig.slice(block)
+        }
+        
+        for (let cmd of apdu) {
+            const sw = await this.card.issueCommand(cmd)
+            CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${cmd}`)
+        }
+
+        return Buffer.alloc(0)
     }
 }

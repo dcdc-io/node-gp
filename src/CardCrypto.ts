@@ -1,5 +1,4 @@
 import { createCipheriv, createDecipheriv } from "crypto"
-import JSZip, { JSZipObject } from "jszip"
 
 export class CardCrypto {
     /**
@@ -55,30 +54,4 @@ export class CardCrypto {
         return transformation3
     }
 
-    static async installForLoad(card:any, zdata:JSZip):Promise<Buffer> {
-        const modulenames = ["Header", "Directory", "Import", "Applet", "Class", "Method", "StaticField", "Export", "ConstantPool", "RefLocation"]
-        const modules = await modulenames
-            .map((mod, o) => [mod, zdata.filter(f => f.endsWith(`${mod}.cap`))[0], o])
-            .filter(x => x[1])
-            .reduce(async (p, c) => { 
-                p[c[2] as number] = { 
-                    module: c[0] as string, 
-                    data: await (c[1] as JSZipObject).async("nodebuffer") 
-                };
-                return p 
-            }, [] as any)
-        
-        console.log(modules)
-
-
-        const aid = modules.find((m:any) => m.module === "Header").data.slice(13, 13 + modules.find((m:any) => m.module === "Header").data[12])
-
-        let sw:any = null
-        let apdu = `80e60200${(aid.length + 5 + 256).toString(16).substring(1)}${(aid.length + 256).toString(16).substring(1)}${aid.toString("hex")}0000000001`
-        sw = await card.issueCommand(apdu)
-        // TODO: check sw == 00 90 00
-
-
-        return new Buffer(0)
-    }
 }

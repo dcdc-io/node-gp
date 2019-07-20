@@ -36,7 +36,7 @@ devices.on('device-activated', ({ device }:any) => {
             console.log(path)
         })
 
-        const loadresponse = await CardCrypto.installForLoad(card, zdata)
+        const loadresponse = await gpcard.installForLoad(zdata)
         CHECK(SW_OK(loadresponse), `unexpected response for INSTALL (for load) ${SW(loadresponse).toString(16)}`)
 
     }, 500 /* TODO: remove this delay hack for exclusive/shared access interference */))
