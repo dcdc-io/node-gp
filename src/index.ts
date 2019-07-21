@@ -30,7 +30,7 @@ devices.on('device-activated', ({ device }:any) => {
 
         // load cap file (e.g. ndef tag)
         // D:\javacard-ndef-full-plain.cap
-        const data = readFileSync("d:/javacard-ndef-full-plain.cap")
+        const data = readFileSync("javacard-ndef-full-plain.cap")
         const zdata = await loadZip(data)
         zdata.forEach((path) => {
             console.log(path)
