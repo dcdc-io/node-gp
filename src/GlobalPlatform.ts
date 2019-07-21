@@ -167,11 +167,57 @@ export default class GlobalPlatform implements IApplication {
             contig = contig.slice(block)
         }
         
+        let sw = Buffer.from([0])
         for (let cmd of apdu) {
-            const sw = await this.card.issueCommand(cmd)
+            sw = await this.card.issueCommand(cmd)
             CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${cmd}`)
         }
+        return sw
+    }
 
-        return Buffer.alloc(0)
+    async installForInstall(capaid:string, modaid:string):Promise<Buffer> {
+        // see spec 2.1.1 9.5.2.3.1 for data
+        /**
+         * 1 len load file aid
+         * 5-16
+         * 1 module aid
+         * 5-16
+         * 1 app aid
+         * 5-16
+         * 1 len privs
+         * 1 privs
+         * 1 len params
+         * 2-n params
+         * 1 len token
+         * 0-n token
+         * 05 
+         * D2 76 00 00 85
+         * 07
+         * D2 76 00 00 85 01 01
+         * 07
+         * D2 76 00 00 85 01 01
+         * 01
+         * 00 
+         * 02 
+         * C9 00 (TLV)
+         * 00
+         * 00
+         *  */
+        let instaid = modaid
+
+        let data = ""
+        data += `${Buffer.from([capaid.length / 2]).toString("hex")}${capaid}`
+        data += `${Buffer.from([modaid.length / 2]).toString("hex")}${modaid}`
+        data += `${Buffer.from([instaid.length / 2]).toString("hex")}${instaid}`
+        data += "0100" // privs
+        data += "02c900" // params
+        data += "00" // token
+
+        const apdu = `80e60c00${Buffer.from([data.length / 2]).toString("hex")}${data}00`
+
+        const sw = this.card.issueCommand(apdu)
+        CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${apdu}`)
+
+        return sw
     }
 }

@@ -39,5 +39,9 @@ devices.on('device-activated', ({ device }:any) => {
         const loadresponse = await gpcard.installForLoad(zdata)
         CHECK(SW_OK(loadresponse), `unexpected response for INSTALL (for load) ${SW(loadresponse).toString(16)}`)
 
+        const installresponse = await gpcard.installForInstall("D276000085", "D2760000850101")
+        CHECK(SW_OK(installresponse), `unexpected response for INSTALL (for load) ${SW(installresponse).toString(16)}`)
+
+
     }, 500 /* TODO: remove this delay hack for exclusive/shared access interference */))
 }); 
