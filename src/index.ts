@@ -14,29 +14,16 @@ devices.on('device-activated', ({ device }:any) => {
 
         device.on('card-removed', (rDevice:any) => {
             if (rDevice.card === card) {
-                // this card removed
+                // this card was removed
             }
         })
 
-        let gpcard = new GlobalPlatform(card)
+        const gpcard = new GlobalPlatform(card)
         await gpcard.connect()
-
-        let packages = await gpcard.getPackages()
-        let applets = await gpcard.getApplets()
         
-        console.log(packages)
-        console.log(applets)
-        //console.log(appletsraw)
-
-        // load cap file (e.g. ndef tag)
-        // D:\javacard-ndef-full-plain.cap
-        const data = readFileSync("javacard-ndef-full-plain.cap")
-        const zdata = await loadZip(data)
-        zdata.forEach((path) => {
-            console.log(path)
-        })
-
+        const zdata = await loadZip(readFileSync("javacard-ndef-full-plain.cap"))
         const installauto = await gpcard.installAuto(zdata)
+        
         CHECK(SW_OK(installauto), `unexpected response for INSTALL ${SW(installauto).toString(16)}`)
     }, 500 /* TODO: remove this delay hack for exclusive/shared access interference */))
 }); 
