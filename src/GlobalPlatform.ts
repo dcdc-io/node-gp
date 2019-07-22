@@ -128,7 +128,7 @@ export default class GlobalPlatform implements IApplication {
         this.card.issueCommand(`80e40080${hexByte(status.aid.length + 2)}4f${hexByte(status.aid.length)}${Buffer.from(status.aid).toString("hex")}00`)
     }
 
-    async installForLoad(zdata:JSZip):Promise<Buffer> {
+    async unzipCap(zdata:JSZip):Promise<{module:string, data:Buffer, i:number}[]> {
         const moduleNames = ["Header", "Directory", "Import", "Applet", "Class", "Method", "StaticField", "Export", "ConstantPool", "RefLocation"]
         
         const modules = []
@@ -142,6 +142,26 @@ export default class GlobalPlatform implements IApplication {
                 })
             }
         }
+
+        return modules
+    }
+
+    async installAuto(zdata:JSZip):Promise<Buffer> {
+        const modules = await this.unzipCap(zdata)
+        const capaid = modules.find((m) => m.module === "Header")!.data.slice(13, 13 + modules.find((m) => m.module === "Header")!.data[12])
+        const appaid = modules.find((m) => m.module === "Applet")!.data.slice(5, 5 + modules.find((m) => m.module === "Applet")!.data[4])
+
+        const lsw = await this.installForLoad(zdata)
+        CHECK(SW_OK(lsw), `unexpected response ${SW(lsw).toString(16)}`)
+
+        const isw = await this.installForInstall(capaid.toString("hex"), appaid.toString("hex"))
+        CHECK(SW_OK(isw), `unexpected response ${SW(isw).toString(16)}`)
+
+        return isw
+    }
+
+    async installForLoad(zdata:JSZip):Promise<Buffer> {
+        const modules = await this.unzipCap(zdata)
 
         const aid = modules.find((m) => m.module === "Header")!.data.slice(13, 13 + modules.find((m:any) => m.module === "Header")!.data[12])
 
@@ -215,7 +235,7 @@ export default class GlobalPlatform implements IApplication {
 
         const apdu = `80e60c00${Buffer.from([data.length / 2]).toString("hex")}${data}00`
 
-        const sw = this.card.issueCommand(apdu)
+        const sw = await this.card.issueCommand(apdu)
         CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${apdu}`)
 
         return sw
