@@ -1,4 +1,3 @@
-import { CardCrypto } from "./CardCrypto"
 import { SW_OK, CHECK, SW } from "./Utils"
 import { readFileSync } from "fs"
 import { loadAsync as loadZip } from "jszip"
@@ -23,7 +22,7 @@ devices.on('device-activated', ({ device }:any) => {
         
         const zdata = await loadZip(readFileSync("javacard-ndef-full-plain.cap"))
         const installauto = await gpcard.installAuto(zdata)
-        
+
         CHECK(SW_OK(installauto), `unexpected response for INSTALL ${SW(installauto).toString(16)}`)
     }, 500 /* TODO: remove this delay hack for exclusive/shared access interference */))
 }); 
