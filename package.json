@@ -3,13 +3,11 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "rebuild": "yarn && tsc"
+    "rebuild": "yarn && tsc && npx browserify -p tsify -p tinyify --standalone GlobalPlatform ./src/index.js > /browser/bundle.js"
   },
   "dependencies": {
     "buffer": "^5.2.1",
-    "jszip": "^3.2.1",
-    "smartcard": "^1.0.29",
-    "ts-loader": "^6.0.4"
+    "jszip": "^3.2.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -19,6 +17,8 @@
     "chai": "^4.2.0",
     "mocha": "^6.2.0",
     "ts-node": "^8.3.0",
-    "typescript": "^3.5.2"
+    "tsify": "^4.0.1",
+    "typescript": "^3.5.2",
+    "tinyify": "^2.5.1"
   }
 }

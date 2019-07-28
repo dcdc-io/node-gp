@@ -1,8 +1,8 @@
 import { expect } from "chai"
 import "mocha"
-import GlobalPlatform from "../GlobalPlatform";
 import { readFileSync } from "fs";
 import { loadAsync } from "jszip"
+import GlobalPlatform from "../GlobalPlatform";
 
 describe("GlobalPlatform", async () => {
     const gp = new GlobalPlatform(null)
