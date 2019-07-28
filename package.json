@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "rebuild": "yarn && tsc && npx browserify -p tsify -p tinyify --standalone GlobalPlatform ./src/index.js > /browser/bundle.js"
+    "rebuild": "yarn && tsc && npx browserify -p tsify -p tinyify --standalone GlobalPlatform ./src/index.js > ./browser/bundle.js"
   },
   "dependencies": {
     "buffer": "^5.2.1",
