@@ -1,6 +1,6 @@
 # node-gp
 
-A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS without any external dependencies.
+A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS without complicated external dependencies.
 
 ## Background 
 
@@ -18,6 +18,11 @@ We're using the 2.1.1 specification as a reference for this implementation, and 
 
 You can get more information about the specification at the [official site](https://globalplatform.org/specs-library/).
 
+## Mobile Device Support
+
+node-gp will work on NFC enabled smart phones/tablets/etc (i.e. android devices).
+
+At the time of writing node-gp is not useful for iPhone because Apple disables meaningful use of the NFC API. If you are an iPhone user and you want to use NFC then you will need to get a ~~new~~ phone.
 
 ## Building
 
@@ -28,4 +33,27 @@ To install dependencies and build run:
 `yarn rebuild`
 
 ## Usage
+
+Whether you load the `browser/bundle.js` in a script tag or `require('node-gp')` in your node project you are likely going to work with the `GlobalPlatform` class as your base class and not bother with anything else.
+
+To use the `GlobalPlatform` class directly do something like the following:
+
+```javascript
+// mobile example with phonegap-nfc
+const handler = {
+    issueCommand: nfc.transceive.bind(nfc)
+}
+const gpcard = new GlobalPlatform(handler)
+const okay = await gpcard.connect()
+// do stuff
+```
+
+```javascript
+// desktop example with smartcard + pcsc-lite
+reader.on('connected', ({card}) => {
+    const gpcard = new GlobalPlatform(card)
+    const okay = await gpcard.connect()
+    // do stuff
+})
+```
 
