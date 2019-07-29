@@ -1,7 +1,7 @@
 {
   "name": "node-gp",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/GlobalPlatform.js",
   "scripts": {
     "rebuild": "yarn && tsc && npx browserify -p tsify -p tinyify --standalone GlobalPlatform ./src/index.js > ./browser/bundle.js"
   },
