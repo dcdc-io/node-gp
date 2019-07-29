@@ -26,11 +26,15 @@ At the time of writing node-gp is not useful for iPhone because Apple disables m
 
 ## Building
 
-node-gp is a typescript project and we're using yarn as a package manager. If you would prefer just javascript and npm then we'll defend our decision not to for €80+ p/h.
+node-gp is a typescript project and we're using yarn as a package manager.
 
-To install dependencies and build run:
+To build:
 
 `yarn rebuild`
+
+We don't, but you can use npm if you really insist:
+
+`npm rebuild`
 
 ## Usage
 
@@ -39,7 +43,7 @@ Whether you load the `browser/bundle.js` in a script tag or `require('node-gp')`
 To use the `GlobalPlatform` class directly do something like the following:
 
 ```javascript
-// mobile example with phonegap-nfc
+// mobile example with phonegap-nfc (after a <script src="browser/bundle.js">)
 const handler = {
     issueCommand: nfc.transceive.bind(nfc)
 }
@@ -49,7 +53,7 @@ const okay = await gpcard.connect()
 ```
 
 ```javascript
-// desktop example with smartcard + pcsc-lite
+// desktop example with smartcard + pcsc-lite (after a GlobalPlatform = require("node-gp"))
 reader.on('connected', ({card}) => {
     const gpcard = new GlobalPlatform(card)
     const okay = await gpcard.connect()
