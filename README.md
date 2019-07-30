@@ -1,6 +1,6 @@
 # node-gp
 
-A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS without complicated external dependencies.
+A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS and Android without complicated external dependencies.
 
 ## Background 
 
@@ -18,11 +18,11 @@ We're using the 2.1.1 specification as a reference for this implementation, and 
 
 You can get more information about the specification at the [official site](https://globalplatform.org/specs-library/).
 
-## Mobile Device Support
+## Android and iPhone Support
 
-node-gp will work on NFC enabled smart phones/tablets/etc (i.e. android devices).
+node-gp itself doesn't have any hardware requirements. Instead it asks that you implement an `issueCommand` function to send and receive APDUs. This means that if your platform supports [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) or [smartcard with pcsc-lite](https://www.npmjs.com/package/smartcard) then node-gp will work. Android devices with NFC support and other computers with smartcard readers are almost always going to work.
 
-At the time of writing node-gp is not useful for iPhone because Apple disables meaningful use of the NFC API. If you are an iPhone user and you want to use NFC then you will need to get a ~~new~~ phone.
+At the time of writing node-gp is not useful for iOS devices because Apple disables meaningful use of the NFC API. If you are an iPhone/iPad etc user and you want to use NFC then you will need either get a proper phone and/or [lobby and Apple and let them know you want NFC enabling.](https://www.apple.com/feedback/iphone.html)
 
 ## Building
 
