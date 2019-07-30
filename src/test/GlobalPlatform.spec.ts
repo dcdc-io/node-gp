@@ -5,7 +5,7 @@ import { loadAsync } from "jszip"
 import GlobalPlatform from "../GlobalPlatform";
 
 describe("GlobalPlatform", async () => {
-    const gp = new GlobalPlatform(null)
+    const gp = new GlobalPlatform(async (x) => x)
     it("should load a cap file", async () => {
         // gp
         const data = readFileSync("d:/javacard-ndef-full-plain.cap")

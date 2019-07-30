@@ -5,11 +5,11 @@ import { CHECK, SW_OK, SW } from "./Utils"
 import JSZip, { JSZipObject } from "jszip"
 import { Stream } from "stream";
 
-
 export default class GlobalPlatform implements IApplication {
 
     // TODO: fork smartcard and port to TS
-    card:any = null
+    issueCommand!: (command:Buffer) => Promise<Buffer>
+    readonly issueCommandStr = (command:string) => this.issueCommand(Buffer.from(command))
 
     DefaultAuthKey = "404142434445464748494a4b4c4d4e4f"
     secureChannelBaseKey = ""
@@ -22,8 +22,8 @@ export default class GlobalPlatform implements IApplication {
     /**
      *
      */
-    constructor(card:any, keys?:{ secureChannelBaseKey?:string, sMacKey?:string, sEncKey:string, dekKey?:string }) {
-        this.card = card
+    constructor(transceiveFunction:(command:Buffer) => Promise<Buffer>, keys?:{ secureChannelBaseKey?:string, sMacKey?:string, sEncKey:string, dekKey?:string }) {
+        this.issueCommand = transceiveFunction
         if (keys) {
             Object.assign(this, keys)
         }
@@ -43,11 +43,11 @@ export default class GlobalPlatform implements IApplication {
         const hostChallenge = randomBytes(8).toString("hex")
 
         // 1. select gp
-        const selectGpResponse = await this.card.issueCommand("00a4040000")
+        const selectGpResponse = await this.issueCommandStr("00a4040000")
         CHECK(SW_OK(selectGpResponse), `unexpected ${SW(selectGpResponse).toString(16)}`)
         
         // 2. initialize update
-        const initUpdateResponse = await this.card.issueCommand("8050000008" + hostChallenge + "28")
+        const initUpdateResponse = await this.issueCommandStr("8050000008" + hostChallenge + "28")
         CHECK(SW_OK(initUpdateResponse), `unexpected ${SW(selectGpResponse).toString(16)}`)
         CHECK(initUpdateResponse.length === 30, `init response length incorrect`)
 
@@ -68,7 +68,7 @@ export default class GlobalPlatform implements IApplication {
         let externalAuthenticate = "8482000010" + hostCalc
         const eaSignature = CardCrypto.getRetailMac(sessionKeys.cmac.toString("hex"), externalAuthenticate, "0000000000000000")
         externalAuthenticate += eaSignature.toString("hex")
-        const externalAuthenticateResponse = await this.card.issueCommand(externalAuthenticate)
+        const externalAuthenticateResponse = await this.issueCommandStr(externalAuthenticate)
         CHECK(SW_OK(externalAuthenticateResponse), `unexpected auth response ${SW(externalAuthenticateResponse).toString(16)}`)
         
         this._connected = true
@@ -115,17 +115,17 @@ export default class GlobalPlatform implements IApplication {
 
     async getPackages() {
         CHECK(this._connected, "not connected")
-        return this.parseStatusResponse(await this.card.issueCommand("80f22000024f00"))
+        return this.parseStatusResponse(await this.issueCommandStr("80f22000024f00"))
     }
 
     async getApplets() {
         CHECK(this._connected, "not connected")
-        return this.parseStatusResponse(await this.card.issueCommand("80f24000024f00"))
+        return this.parseStatusResponse(await this.issueCommandStr("80f24000024f00"))
     }
 
     async deletePackage(status:{aid:Buffer | Uint8Array}) {
         const hexByte = (x:number) => Buffer.from([x]).toString("hex")
-        this.card.issueCommand(`80e40080${hexByte(status.aid.length + 2)}4f${hexByte(status.aid.length)}${Buffer.from(status.aid).toString("hex")}00`)
+        this.issueCommandStr(`80e40080${hexByte(status.aid.length + 2)}4f${hexByte(status.aid.length)}${Buffer.from(status.aid).toString("hex")}00`)
     }
 
     async unzipCap(zdata:JSZip):Promise<{module:string, data:Buffer, i:number}[]> {
@@ -189,7 +189,7 @@ export default class GlobalPlatform implements IApplication {
         
         let sw = Buffer.from([0])
         for (let cmd of apdu) {
-            sw = await this.card.issueCommand(cmd)
+            sw = await this.issueCommandStr(cmd)
             CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${cmd}`)
         }
         return sw
@@ -235,7 +235,7 @@ export default class GlobalPlatform implements IApplication {
 
         const apdu = `80e60c00${Buffer.from([data.length / 2]).toString("hex")}${data}00`
 
-        const sw = await this.card.issueCommand(apdu)
+        const sw = await this.issueCommandStr(apdu)
         CHECK(SW_OK(sw), `unexpected response ${SW(sw).toString(16)} for ${apdu}`)
 
         return sw
