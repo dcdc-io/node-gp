@@ -9,7 +9,7 @@ export default class GlobalPlatform implements IApplication {
 
     // TODO: fork smartcard and port to TS
     issueCommand!: (command:Buffer) => Promise<Buffer>
-    readonly issueCommandStr = (command:string) => this.issueCommand(Buffer.from(command))
+    readonly issueCommandStr = (command:string) => this.issueCommand(Buffer.from(command, "hex"))
 
     DefaultAuthKey = "404142434445464748494a4b4c4d4e4f"
     secureChannelBaseKey = ""
