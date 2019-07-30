@@ -1,6 +1,23 @@
 # node-gp
 
-A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS and Android without complicated external dependencies.
+A get the job done javascript/typescript library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS and Android.
+
+node-gp provides a GlobalPlatform class that requires a single function in order to communicate with a device. You must provide an interface for the device itself; in node.js [smartcard](https://www.npmjs.com/package/smartcard) does this job well and for mobile apps [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) is just as good.
+
+## Quick Start
+
+### For node.js/electron/nw.js:
+
+First add node-gp and smartcard to your project:
+
+`npm install node-gp smartcard --save`
+
+Then create a function to integrate smartcard and node-gp:
+
+```javascript
+const { GlobalPlatform } = require('node-gp')
+const { smartcard } = require
+```
 
 ## Background 
 
