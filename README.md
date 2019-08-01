@@ -1,6 +1,60 @@
 # node-gp
 
-A get the job done node.js library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS without any external dependencies.
+A get the job done javascript/typescript library for interacting with GlobalPlatform devices. You can use node-gp to manage a GlobalPlatform device on any major desktop OS and Android.
+
+node-gp provides a GlobalPlatform class that requires a single function in order to communicate with a device. You must provide an interface for the device itself; in node.js [smartcard](https://www.npmjs.com/package/smartcard) does this job well and for mobile apps [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) is just as good.
+
+## Quick Start:
+
+#### Using node-gp with smartcard in node.js/electron/nw.js projects:
+
+First add node-gp and smartcard to your project:
+
+`npm install node-gp smartcard --save`
+
+Then you want a function to integrate your hardware library (smartcard in this case) and node-gp.
+
+Because smartcard already has a promisified `issueCommand` function that takes a string or Buffer as a parameter, integration is as easy as *snippet 1.*.
+
+*snippet 1.*
+```javascript
+const transceive = event.card.issueCommand.bind(event.card)
+const gpcard = new GlobalPlatform(transceive)
+```
+
+If you want the fully working example `index.js` then copy this *index.js example*:
+
+```javascript
+// index.js
+const GlobalPlatform = require("node-gp")
+const smartcard = require('smartcard')
+
+const Devices = smartcard.Devices
+const devices = new Devices()
+
+devices.on('device-activated', event => {
+    event.device.on('card-inserted', event => {
+        const transceive = event.card.issueCommand.bind(event.card)
+        const gpcard = new GlobalPlatform(transceive)
+        gpcard.connect().then(() => {
+            console.log("connected")
+            // now you have a connected device
+            gpcard.getPackages().then(packages => {
+                for (let package of packages) {
+                    // demo: print out package aids
+                    console.log(Buffer.from(package.aid).toString("hex"))
+                }
+            })
+        }).catch(error => {
+            console.error(error)
+        })
+    })
+})
+```
+
+#### Using node-gp with phonegap-nfc in phonegap/cordova/etc mobile projects:
+
+Coming soon!
 
 ## Background 
 
@@ -18,14 +72,70 @@ We're using the 2.1.1 specification as a reference for this implementation, and 
 
 You can get more information about the specification at the [official site](https://globalplatform.org/specs-library/).
 
+## Android and iPhone Support
+
+node-gp itself doesn't have any hardware requirements. Instead it asks that you implement an `transceive` function to send and receive APDUs. This means that if your platform supports [phonegap-nfc](https://github.com/chariotsolutions/phonegap-nfc) or [smartcard with pcsc-lite](https://www.npmjs.com/package/smartcard) then node-gp will work. Android devices with NFC support and other computers with smartcard readers are almost always going to work.
+
+At the time of writing node-gp is not useful for iOS devices because Apple disables meaningful use of the NFC API. If you are an iPhone/iPad etc user and you want to use NFC then you will need either get a proper phone and/or [lobby and Apple and let them know you want NFC enabling.](https://www.apple.com/feedback/iphone.html)
 
 ## Building
 
-node-gp is a typescript project and we're using yarn as a package manager. If you would prefer just javascript and npm then we'll defend our decision not to for €80+ p/h.
+node-gp is a typescript project and we're using yarn as a package manager (which means we don't test `npm` but it likely works the same).
 
-To install dependencies and build run:
+To build:
 
 `yarn rebuild`
 
+Or npm if you really insist:
+
+`npm rebuild`
+
 ## Usage
 
+Whether you load the `browser/bundle.js` in a script tag or `require('node-gp')` in your node project you are likely going to work with the `GlobalPlatform` class as your base class and not bother with anything else.
+
+To use the `GlobalPlatform` class directly do something like the following:
+
+_mobile snippet (untested**)._
+```javascript
+// mobile example with phonegap-nfc (after a <script src="browser/bundle.js">)
+const transceiveFunction = nfc.transceive.bind(nfc)
+const gpcard = new GlobalPlatform(transceiveFunction)
+const okay = await gpcard.connect()
+// do stuff
+```
+
+_node snippet._
+```javascript
+// desktop example with smartcard + pcsc-lite (after a GlobalPlatform = require("node-gp"))
+reader.on('connected', ({card}) => {
+    const transceiveFunction = card.issueCommand.bind(card)
+    const gpcard = new GlobalPlatform(transceiveFunction)
+    const okay = await gpcard.connect()
+    // do stuff
+})
+```
+
+### More on the `transceive` function:
+
+The `transceive` function is best understood by it's TypeScript signature:
+
+```typescript
+transceiveFunction = async (command: Buffer) => Buffer
+```
+
+The `async`-ness of the function is technically optional. Provided the function you pass as a first parameter to the `new GlobalPlatform(transceiveFunction)` will both a. accept a Buffer and b. return/resolve to a Buffer then everything will work.
+
+### How to use the `Buffer` class in none node.js environments:
+
+In the browser node-gp uses a bundled instance of [feross/buffer](https://github.com/feross/buffer) to polyfill for node.js' Buffer class - so you won't need to bring anything in.
+
+Using `string`s tends to easier when you're hand rolling APDUs so if you need to convert a `string` to a `Buffer` you should use:
+
+`const buffer = Buffer.from(str, "hex")`
+
+And if vice-versa you want to convert a `Buffer` to a `string`:
+
+`const str = Buffer.toString("hex")`
+
+_**note: a `transceiveFunction` for browser may need to covnert data because the Buffer API isn't necessarily compatible with your chosen hardware integration library._ 
