@@ -124,13 +124,13 @@ The `transceive` function is best understood by it's TypeScript signature:
 transceiveFunction = async (command: Buffer) => Buffer
 ```
 
-The `async`-ness of the function is technically optional. Provided the function you pass as a first parameter to the `new GlobalPlatform(transceiveFunction)` will both a. accept a Buffer and b. return/resolve to a Buffer then everything will work.
+The `async`-ness of the function is technically optional. Provided the function you pass as a first parameter to the `new GlobalPlatform(transceiveFunction)` will both accept a Buffer and return/resolve to a Buffer then everything will work.
 
 ### How to use the `Buffer` class in none node.js environments:
 
 In the browser node-gp uses a bundled instance of [feross/buffer](https://github.com/feross/buffer) to polyfill for node.js' Buffer class - so you won't need to bring anything in.
 
-Using `string`s tends to easier when you're hand rolling APDUs so if you need to convert a `string` to a `Buffer` you should use:
+Using `string`s tends to be easier when you're hand rolling APDUs so if you need to convert a `string` to a `Buffer` you should use:
 
 `const buffer = Buffer.from(str, "hex")`
 
