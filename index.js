@@ -1,2 +1,3 @@
-window.GlobalPlatform = require("./dist/GlobalPlatform").default
-window.Buffer = require('buffer').Buffer
+global.GlobalPlatform = require("./dist/GlobalPlatform").default
+global.CardCrypto = require('./dist/CardCrypto').CardCrypto
+global.Buffer = require('buffer').Buffer
