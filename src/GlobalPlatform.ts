@@ -115,12 +115,20 @@ export default class GlobalPlatform implements IApplication {
 
     async getPackages() {
         CHECK(this._connected, "not connected")
-        return this.parseStatusResponse(await this.issueCommandStr("80f22000024f00"))
+        const statusResponse = await this.issueCommandStr("80f22000024f00")
+        if (SW(statusResponse) == 0x6a88) {
+            return []
+        }
+        return this.parseStatusResponse(statusResponse)
     }
 
     async getApplets() {
         CHECK(this._connected, "not connected")
-        return this.parseStatusResponse(await this.issueCommandStr("80f24000024f00"))
+        const statusResponse = await this.issueCommandStr("80f24000024f00")
+        if (SW(statusResponse) == 0x6a88) {
+            return []
+        }
+        return this.parseStatusResponse(statusResponse)
     }
 
     async deletePackage(status:{aid:Buffer | Uint8Array}) {
