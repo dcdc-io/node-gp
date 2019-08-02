@@ -47,9 +47,10 @@ export class CardCrypto {
             }
             transformation1 = c1().update(buffer)    
         }
+        const pad = (buffer:Buffer, len:number) => Buffer.alloc(len).fill(buffer)
     
-        let transformation3d = c2().update(transformation1)
-        let transformation3 = c1().update(transformation3d)
+        let transformation3d = c2().update(pad(transformation1, 16))
+        let transformation3 = c1().update(pad(transformation3d, 8))
     
         return transformation3
     }
