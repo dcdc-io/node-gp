@@ -1,12 +1,12 @@
 {
   "name": "node-gp",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "main": "index.js",
   "browser": {
     "index.js": "browser/bundle.js"
   },
   "scripts": {
-    "rebuild": "tsc && npx browserify -p tsify -p tinyify --standalone GlobalPlatform ./index.js > ./browser/bundle.js"
+    "rebuild": "tsc && npx browserify -p tinyify ./index.js -o ./browser/bundle.js && npx browserify -p tinyify ./index.js -o ./browser/bundle.debug.js --debug"
   },
   "dependencies": {
     "buffer": "^5.2.1",
@@ -17,11 +17,12 @@
     "@types/jszip": "^3.1.6",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.6.8",
+    "browserify": "^16.3.0",
     "chai": "^4.2.0",
     "mocha": "^6.2.0",
+    "tinyify": "^2.5.1",
     "ts-node": "^8.3.0",
     "tsify": "^4.0.1",
-    "typescript": "^3.5.2",
-    "tinyify": "^2.5.1"
+    "typescript": "^3.5.2"
   }
 }
