@@ -1,0 +1,1 @@
+{"type":"comment","content":"extra trims and buffer padding was needed to get des.js to behave like nodes built in crypto - node is v10.15.0","who":"ben@dcdc.io <ben@dcdc.io>"}
