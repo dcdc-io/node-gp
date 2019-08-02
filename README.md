@@ -138,4 +138,4 @@ And if vice-versa you want to convert a `Buffer` to a `string`:
 
 `const str = Buffer.toString("hex")`
 
-_**note: a `transceiveFunction` for browser may need to covnert data because the Buffer API isn't necessarily compatible with your chosen hardware integration library._ 
+_**note: a `transceiveFunction` for browser may need to convert data because the Buffer API isn't necessarily compatible with your chosen hardware integration library._ 
