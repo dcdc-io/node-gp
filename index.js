@@ -1,1 +1,2 @@
-module.exports = require("./dist/GlobalPlatform").default
+window.GlobalPlatform = require("./dist/GlobalPlatform").default
+window.Buffer = require('buffer').Buffer

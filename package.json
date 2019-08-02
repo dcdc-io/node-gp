@@ -1,6 +1,6 @@
 {
   "name": "node-gp",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "main": "index.js",
   "browser": {
     "index.js": "browser/bundle.js"
