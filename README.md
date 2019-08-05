@@ -54,7 +54,9 @@ devices.on('device-activated', event => {
 
 #### Using node-gp with phonegap-nfc in phonegap/cordova/etc mobile projects:
 
-Coming soon!
+There is a complete example for node-gp with Cordova here: [https://github.com/dcdc-io/node-gp-phonegap](https://github.com/dcdc-io/node-gp-phonegap)
+
+More coming soon....
 
 ## Background 
 
@@ -92,13 +94,13 @@ Or npm if you really insist:
 
 ## Usage
 
-Whether you load the `browser/bundle.js` in a script tag or `require('node-gp')` in your node project you are likely going to work with the `GlobalPlatform` class as your base class and not bother with anything else.
+Whether you load the `browser/nodegp-bundle.js` in a script tag or `require('node-gp')` in your node project you are likely going to work with the `GlobalPlatform` class as your base class and not bother with anything else.
 
 To use the `GlobalPlatform` class directly do something like the following:
 
 _mobile snippet (untested**)._
 ```javascript
-// mobile example with phonegap-nfc (after a <script src="browser/bundle.js">)
+// mobile example with phonegap-nfc (after a <script src="browser/nodegp-bundle.js">)
 const transceiveFunction = nfc.transceive.bind(nfc)
 const gpcard = new GlobalPlatform(transceiveFunction)
 const okay = await gpcard.connect()

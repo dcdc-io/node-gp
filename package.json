@@ -1,12 +1,12 @@
 {
   "name": "node-gp",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "main": "index.js",
   "browser": {
-    "index.js": "browser/bundle.js"
+    "index.js": "browser/nodegp-bundle.js"
   },
   "scripts": {
-    "rebuild": "tsc && npx browserify -p tinyify ./index.js -o ./browser/bundle.js && npx browserify -p tinyify ./index.js -o ./browser/bundle.debug.js --debug"
+    "rebuild": "tsc && npx browserify -p tinyify ./index.js -o ./browser/nodegp-bundle.js && npx browserify -p tinyify ./index.js -o ./browser/nodegp-bundle.debug.js --debug"
   },
   "dependencies": {
     "buffer": "^5.2.1",
