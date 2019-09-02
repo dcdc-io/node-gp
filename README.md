@@ -8,6 +8,8 @@ node-gp provides a GlobalPlatform class that requires a single function in order
 
 #### Using node-gp with smartcard in node.js/electron/nw.js projects:
 
+> note: linux users beware - when using [tomkp/smartcard](https://github.com/tomkp/smartcard) you are advised to review the steps required for [santigimeno/node-pcsclite](https://github.com/santigimeno/node-pcsclite) as this lilbrary is ultimately doing the communication with your hardware. We're looking into simplifying this.
+
 First add node-gp and smartcard to your project:
 
 `npm install node-gp smartcard --save`
