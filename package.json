@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "buffer": "^5.2.1",
-    "jszip": "^3.2.1"
+    "jszip": "^3.7.0"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
